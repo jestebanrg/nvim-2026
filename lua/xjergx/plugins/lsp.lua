@@ -34,7 +34,7 @@ return {
     opts = {
       ensure_installed = {
         -- Tu stack
-        "ts_ls", -- TypeScript/JavaScript
+        "vtsls", -- TypeScript/JavaScript (reemplaza ts_ls)
         "vue_ls", -- Vue 3 (formerly volar)
         "omnisharp", -- C#
         "lua_ls", -- Lua
@@ -200,47 +200,67 @@ return {
       -- ╚════════════════════════════════════════════════════════════════════╝
 
       -- ┌────────────────────────────────────────────────────────────────────┐
-      -- │                          TYPESCRIPT                                │
+      -- │                     TYPESCRIPT (vtsls + Vue plugin)                │
+      -- │          vtsls maneja TS/JS y el plugin de Vue para .vue           │
       -- └────────────────────────────────────────────────────────────────────┘
-      vim.lsp.config("ts_ls", {
+      -- Path al language server de Vue (necesario para el plugin)
+      local mason_packages = vim.fn.stdpath("data") .. "/mason/packages"
+      local vue_language_server_path = mason_packages .. "/vue-language-server/node_modules/@vue/language-server"
+
+      vim.lsp.config("vtsls", {
         capabilities = capabilities,
+        filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
         settings = {
+          vtsls = {
+            tsserver = {
+              globalPlugins = {
+                {
+                  name = "@vue/typescript-plugin",
+                  location = vue_language_server_path,
+                  languages = { "vue" },
+                  configNamespace = "typescript",
+                  enableForWorkspaceTypeScriptVersions = true,
+                },
+              },
+            },
+          },
           typescript = {
+            updateImportsOnFileMove = { enabled = "always" },
+            suggest = { completeFunctionCalls = true },
             inlayHints = {
-              includeInlayParameterNameHints = "all",
-              includeInlayParameterNameHintsWhenArgumentMatchesName = true,
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayVariableTypeHints = true,
-              includeInlayVariableTypeHintsWhenTypeMatchesName = true,
-              includeInlayPropertyDeclarationTypeHints = true,
-              includeInlayFunctionLikeReturnTypeHints = true,
-              includeInlayEnumMemberValueHints = true,
+              parameterNames = { enabled = "all" },
+              parameterTypes = { enabled = true },
+              variableTypes = { enabled = true },
+              propertyDeclarationTypes = { enabled = true },
+              functionLikeReturnTypes = { enabled = true },
+              enumMemberValues = { enabled = true },
             },
           },
           javascript = {
+            updateImportsOnFileMove = { enabled = "always" },
+            suggest = { completeFunctionCalls = true },
             inlayHints = {
-              includeInlayParameterNameHints = "all",
-              includeInlayParameterNameHintsWhenArgumentMatchesName = true,
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayVariableTypeHints = true,
-              includeInlayVariableTypeHintsWhenTypeMatchesName = true,
-              includeInlayPropertyDeclarationTypeHints = true,
-              includeInlayFunctionLikeReturnTypeHints = true,
-              includeInlayEnumMemberValueHints = true,
+              parameterNames = { enabled = "all" },
+              parameterTypes = { enabled = true },
+              variableTypes = { enabled = true },
+              propertyDeclarationTypes = { enabled = true },
+              functionLikeReturnTypes = { enabled = true },
+              enumMemberValues = { enabled = true },
             },
           },
         },
       })
 
       -- ┌────────────────────────────────────────────────────────────────────┐
-      -- │                             VUE 3                                  │
+      -- │                         VUE 3 (Hybrid Mode)                        │
+      -- │       vue_ls maneja HTML/CSS, vtsls maneja TS via plugin           │
       -- └────────────────────────────────────────────────────────────────────┘
       vim.lsp.config("vue_ls", {
         capabilities = capabilities,
-        filetypes = { "vue", "typescript", "javascript" },
+        filetypes = { "vue" },
         init_options = {
           vue = {
-            hybridMode = false,
+            hybridMode = true,
           },
         },
       })
@@ -353,7 +373,7 @@ return {
       -- ║                     ENABLE ALL SERVERS                             ║
       -- ╚════════════════════════════════════════════════════════════════════╝
       vim.lsp.enable({
-        "ts_ls",
+        "vtsls",
         "vue_ls",
         "omnisharp",
         "lua_ls",
