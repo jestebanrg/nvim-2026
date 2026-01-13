@@ -109,76 +109,117 @@ return {
     dependencies = {
       { "folke/snacks.nvim", opts = { input = {}, picker = {}, terminal = {} } },
     },
-    cmd = { "Opencode" },
-    config = function()
-      ---@type opencode.Opts
-      vim.g.opencode_opts = {
-        provider = {
-          enabled = "snacks",
-        },
-      }
-
-      -- Required for reload events
-      vim.o.autoread = true
-    end,
     keys = {
-      { "<leader>o", nil, desc = "OpenCode" },
       {
-        "<leader>oa",
+        "<leader>oc",
         function()
-          require("opencode").ask("@this: ", { submit = true })
+          require("opencode").toggle()
         end,
-        mode = { "n", "x" },
-        desc = "Ask OpenCode",
+        mode = { "n" },
+        desc = "Toggle OpenCode",
       },
       {
         "<leader>os",
         function()
-          require("opencode").select()
+          require("opencode").select({ submit = true })
         end,
         mode = { "n", "x" },
-        desc = "Select OpenCode action",
+        desc = "OpenCode select",
       },
       {
-        "<leader>ot",
+        "<leader>oi",
         function()
-          require("opencode").toggle()
+          require("opencode").ask("", { submit = true })
         end,
-        mode = { "n", "t" },
-        desc = "Toggle OpenCode",
+        mode = { "n", "x" },
+        desc = "OpenCode ask",
+      },
+      {
+        "<leader>oI",
+        function()
+          require("opencode").ask("@this: ", { submit = true })
+        end,
+        mode = { "n", "x" },
+        desc = "OpenCode ask with context",
+      },
+      {
+        "<leader>ob",
+        function()
+          require("opencode").ask("@file ", { submit = true })
+        end,
+        mode = { "n", "x" },
+        desc = "OpenCode ask about buffer",
       },
       {
         "<leader>op",
         function()
-          require("opencode").prompt("review")
+          require("opencode").prompt("@this", { submit = true })
         end,
         mode = { "n", "x" },
-        desc = "Review with OpenCode",
+        desc = "OpenCode prompt",
+      },
+      -- Built-in prompts
+      {
+        "<leader>ope",
+        function()
+          require("opencode").prompt("explain", { submit = true })
+        end,
+        mode = { "n", "x" },
+        desc = "OpenCode explain",
       },
       {
-        "<leader>oe",
+        "<leader>opf",
         function()
-          require("opencode").prompt("explain")
+          require("opencode").prompt("fix", { submit = true })
         end,
         mode = { "n", "x" },
-        desc = "Explain with OpenCode",
+        desc = "OpenCode fix",
       },
       {
-        "<leader>of",
+        "<leader>opd",
         function()
-          require("opencode").prompt("fix")
+          require("opencode").prompt("diagnose", { submit = true })
         end,
         mode = { "n", "x" },
-        desc = "Fix with OpenCode",
+        desc = "OpenCode diagnose",
       },
       {
-        "<leader>od",
+        "<leader>opr",
         function()
-          require("opencode").prompt("diagnostics")
+          require("opencode").prompt("review", { submit = true })
         end,
         mode = { "n", "x" },
-        desc = "Explain diagnostics",
+        desc = "OpenCode review",
+      },
+      {
+        "<leader>opt",
+        function()
+          require("opencode").prompt("test", { submit = true })
+        end,
+        mode = { "n", "x" },
+        desc = "OpenCode test",
+      },
+      {
+        "<leader>opo",
+        function()
+          require("opencode").prompt("optimize", { submit = true })
+        end,
+        mode = { "n", "x" },
+        desc = "OpenCode optimize",
       },
     },
+    config = function()
+      vim.g.opencode_opts = {
+        provider = {
+          snacks = {
+            win = {
+              position = "right",
+              width = 0.40,
+            },
+          },
+        },
+      }
+      vim.o.autoread = true
+    end,
   },
 }

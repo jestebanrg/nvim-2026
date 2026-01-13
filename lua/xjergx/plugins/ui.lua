@@ -66,68 +66,74 @@ return {
   -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "nvim-lualine/lualine.nvim",
+    dependencies = {
+      "nvim-tree/nvim-web-devicons",
+      "christopher-francisco/tmux-status.nvim",
+    },
     event = "VeryLazy",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = function()
-      local colors = require("kanagawa.colors").setup()
-      local theme_colors = colors.theme
+    config = function()
+      local has_tmux_status, tmux_status = pcall(require, "tmux-status")
 
-      return {
+      local lualine_config = {
         options = {
-          theme = "kanagawa",
-          globalstatus = true,
+          theme = "catppuccin",
           component_separators = { left = "", right = "" },
           section_separators = { left = "", right = "" },
           disabled_filetypes = {
-            statusline = { "dashboard", "alpha", "ministarter", "snacks_dashboard" },
+            statusline = { "dashboard", "alpha", "starter" },
           },
         },
         sections = {
-          lualine_a = {
-            { "mode", separator = { left = "" }, right_padding = 2 },
-          },
-          lualine_b = {
-            { "branch", icon = "" },
-            {
-              "diff",
-              symbols = { added = " ", modified = " ", removed = " " },
-            },
-          },
+          lualine_a = { "mode" },
+          lualine_b = { "branch", "diff", "diagnostics" },
           lualine_c = {
-            { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
             {
               "filename",
-              path = 1, -- Relative path
-              symbols = { modified = " ", readonly = " ", unnamed = "[No Name]" },
+              file_status = true,
+              newfile_status = false,
+              path = 4,
+              shorting_target = 40,
+              symbols = {
+                modified = "  ",
+                readonly = "",
+                unnamed = "",
+              },
             },
           },
           lualine_x = {
             {
-              "diagnostics",
-              symbols = { error = " ", warn = " ", info = " ", hint = "󰌵 " },
+              function()
+                return require("noice").api.status.command.get()
+              end,
+              cond = function()
+                return package.loaded["noice"] and require("noice").api.status.command.has()
+              end,
+              color = { fg = "#ff9e64" },
             },
             {
               function()
-                local clients = vim.lsp.get_clients({ bufnr = 0 })
-                if #clients == 0 then
-                  return ""
-                end
-                local names = {}
-                for _, client in ipairs(clients) do
-                  table.insert(names, client.name)
-                end
-                return "  " .. table.concat(names, ", ")
+                return require("noice").api.status.mode.get()
               end,
+              cond = function()
+                return package.loaded["noice"] and require("noice").api.status.mode.has()
+              end,
+              color = { fg = "#ff9e64" },
             },
+            {
+              function()
+                return "  " .. require("noice").api.status.search.get()
+              end,
+              cond = function()
+                return package.loaded["noice"] and require("noice").api.status.search.has()
+              end,
+              color = { fg = "#ff9e64" },
+            },
+            "encoding",
+            "fileformat",
+            "filetype",
           },
-          lualine_y = {
-            { "encoding", show_bomb = true },
-            { "fileformat", symbols = { unix = "", dos = "", mac = "" } },
-            "progress",
-          },
-          lualine_z = {
-            { "location", separator = { right = "" }, left_padding = 2 },
-          },
+          lualine_y = { "progress" },
+          lualine_z = { "location" },
         },
         inactive_sections = {
           lualine_a = {},
@@ -137,9 +143,73 @@ return {
           lualine_y = {},
           lualine_z = {},
         },
-        extensions = { "lazy", "mason", "oil", "quickfix" },
+        -- sections = {},
+        tabline = {},
+        inactive_winbar = {},
+        extensions = { "oil", "lazy", "mason" },
       }
+
+      -- Agregar tmux-status solo si está disponible
+      if has_tmux_status then
+        table.insert(lualine_config.sections.lualine_c, {
+          tmux_status.tmux_windows,
+          cond = tmux_status.show,
+          padding = { left = 3 },
+        })
+      end
+
+      require("lualine").setup(lualine_config)
     end,
+  },
+  {
+    "b0o/incline.nvim",
+    config = function()
+      local helpers = require("incline.helpers")
+      local devicons = require("nvim-web-devicons")
+      require("incline").setup({
+        window = {
+          padding = 0,
+          margin = { horizontal = 0 },
+        },
+        render = function(props)
+          local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(props.buf), ":t")
+          if filename == "" then
+            filename = "[No Name]"
+          end
+          local ft_icon, ft_color = devicons.get_icon_color(filename)
+          local modified = vim.bo[props.buf].modified
+          return {
+            ft_icon and { " ", ft_icon, " ", guibg = ft_color, guifg = helpers.contrast_color(ft_color) } or "",
+            " ",
+            { filename, gui = modified and "bold,italic" or "bold" },
+            " ",
+            guibg = "#44406e",
+          }
+        end,
+      })
+    end,
+  },
+  {
+    "rachartier/tiny-code-action.nvim",
+    dependencies = {
+      { "nvim-lua/plenary.nvim" },
+    },
+    event = "LspAttach",
+    opts = {
+      picker = "snacks",
+      signs = {
+        quickfix = { "", { link = "DiagnosticWarning" } },
+        others = { "", { link = "DiagnosticWarning" } },
+        refactor = { "", { link = "DiagnosticInfo" } },
+        ["refactor.move"] = { "󰪹", { link = "DiagnosticInfo" } },
+        ["refactor.extract"] = { "", { link = "DiagnosticError" } },
+        ["source.organizeImports"] = { "", { link = "DiagnosticWarning" } },
+        ["source.fixAll"] = { "󰃢", { link = "DiagnosticError" } },
+        ["source"] = { "", { link = "DiagnosticError" } },
+        ["rename"] = { "󰑕", { link = "DiagnosticWarning" } },
+        ["codeAction"] = { "", { link = "DiagnosticWarning" } },
+      },
+    },
   },
 
   -- ┌──────────────────────────────────────────────────────────────────────────┐
