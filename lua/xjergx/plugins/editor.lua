@@ -38,8 +38,6 @@ local parsers = {
   -- Misc
   "diff",
   "dockerfile",
-  "xml",
-  "http",
 }
 
 return {
@@ -236,6 +234,23 @@ return {
           require("treesitter-context").go_to_context()
         end,
         desc = "Go to context",
+      },
+    },
+  },
+
+  -- ┌──────────────────────────────────────────────────────────────────────────┐
+  -- │                            NVIM-TS-AUTOTAG                               │
+  -- │         Auto close y rename de tags HTML/Vue/JSX con Treesitter          │
+  -- │           https://github.com/windwp/nvim-ts-autotag                      │
+  -- └──────────────────────────────────────────────────────────────────────────┘
+  {
+    "windwp/nvim-ts-autotag",
+    event = { "BufReadPost", "BufNewFile" },
+    opts = {
+      opts = {
+        enable_close = true, -- Auto close tags
+        enable_rename = true, -- Auto rename pairs of tags
+        enable_close_on_slash = false, -- Auto close on trailing </
       },
     },
   },
