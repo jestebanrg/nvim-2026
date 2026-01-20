@@ -963,13 +963,66 @@ return {
         end,
         desc = "Select Scratch Buffer",
       },
+      {
+        "<leader>lm",
+        function()
+          Snacks.terminal("vi-mongo", {
+            cwd = vim.fn.getcwd(),
+            win = {
+              position = "float",
+              backdrop = 60,
+              width = 0.9,
+              height = 0.9,
+            },
+          })
+        end,
+        desc = "Vi Mongo",
+      },
+      {
+        "<leader>ld",
+        function()
+          Snacks.terminal("lazydocker", {
+            cwd = vim.fn.getcwd(),
+            win = {
+              position = "float",
+              backdrop = 60,
+              width = 0.9,
+              height = 0.9,
+            },
+          })
+        end,
+        desc = "LazyDocker",
+      },
+      {
+        "<leader>lq",
+        function()
+          Snacks.terminal("lazysql", {
+            cwd = vim.fn.getcwd(),
+            win = {
+              position = "float",
+              backdrop = 60,
+              width = 0.9,
+              height = 0.9,
+            },
+          })
+        end,
+        desc = "LazySQL (Snacks)",
+      },
     },
 
-    init = function()
+    init = function(opts)
+      opts.terminal = opts.terminal or {}
+      opts.terminal.vimongo = {
+        cmd = "vi-mongo",
+        cwd = vim.fn.getcwd,
+      }
+      opts.terminal.lazysql = {
+        cmd = "lazysql",
+        cwd = vim.fn.getcwd,
+      }
       vim.api.nvim_create_autocmd("User", {
         pattern = "VeryLazy",
         callback = function()
-          -- Setup some globals for debugging (optional, remove if unwanted)
           _G.dd = function(...)
             Snacks.debug.inspect(...)
           end
@@ -978,7 +1031,6 @@ return {
           end
           vim.print = _G.dd -- Override print to use snacks for `:=` command
 
-          -- Create some toggle mappings
           Snacks.toggle.option("spell", { name = "Spelling" }):map("<leader>us")
           Snacks.toggle.option("wrap", { name = "Wrap" }):map("<leader>uw")
           Snacks.toggle.option("relativenumber", { name = "Relative Number" }):map("<leader>uL")

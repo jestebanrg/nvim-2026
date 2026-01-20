@@ -1,13 +1,4 @@
--- ╔══════════════════════════════════════════════════════════════════════════╗
--- ║                              LSP PLUGINS                                 ║
--- ║                  Language Server Protocol Configuration                  ║
--- ╚══════════════════════════════════════════════════════════════════════════╝
-
 return {
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              MASON                                       │
-  -- │                     Package manager para LSP, etc                        │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "williamboman/mason.nvim",
     cmd = "Mason",
@@ -23,42 +14,24 @@ return {
       },
     },
   },
-
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                         MASON-LSPCONFIG                                  │
-  -- │                  Bridge entre Mason y lspconfig                          │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "williamboman/mason-lspconfig.nvim",
     dependencies = { "williamboman/mason.nvim" },
     opts = {
       ensure_installed = {
-        -- Tu stack
         "vtsls", -- TypeScript/JavaScript (reemplaza ts_ls)
         "vue_ls", -- Vue 3 (formerly volar)
         "omnisharp", -- C#
-        "lua_ls", -- Lua
-        -- Web extras
         "html",
         "cssls",
-        "tailwindcss",
         "emmet_ls",
         "jsonls",
-        -- Config
         "yamlls",
-        -- Docker
         "dockerls",
-        "docker_compose_language_service",
       },
       automatic_installation = true,
     },
   },
-
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              NVIM-LSPCONFIG                              │
-  -- │                         LSP Client Configuration                         │
-  -- │          Using vim.lsp.config (Neovim 0.11+ native approach)             │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "neovim/nvim-lspconfig",
     event = { "BufReadPost", "BufNewFile", "BufWritePre" },
@@ -71,9 +44,6 @@ return {
       "b0o/schemastore.nvim",
     },
     config = function()
-      -- ╔════════════════════════════════════════════════════════════════════╗
-      -- ║                         DIAGNOSTICS CONFIG                         ║
-      -- ╚════════════════════════════════════════════════════════════════════╝
       vim.diagnostic.config({
         underline = true,
         update_in_insert = false,
@@ -101,9 +71,6 @@ return {
         },
       })
 
-      -- ╔════════════════════════════════════════════════════════════════════╗
-      -- ║                         CAPABILITIES                               ║
-      -- ╚════════════════════════════════════════════════════════════════════╝
       local capabilities = vim.tbl_deep_extend(
         "force",
         {},
@@ -111,7 +78,6 @@ return {
         require("blink.cmp").get_lsp_capabilities()
       )
 
-      -- Habilitar file watching
       capabilities.workspace = {
         didChangeWatchedFiles = {
           dynamicRegistration = true,
@@ -131,7 +97,6 @@ return {
             vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
           end
 
-          -- Navigation (using snacks.picker - defined in snacks.lua)
           -- NOTE: gd, gr, gI, gy are mapped in snacks.lua to snacks.picker
           map("n", "gD", vim.lsp.buf.declaration, "Goto Declaration")
 
@@ -141,7 +106,10 @@ return {
           map("i", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
 
           -- Actions
-          map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code Action")
+          map({ "n", "v" }, "<leader>ca", function()
+            require("tiny-code-action").code_action()
+          end, "Code Action")
+          -- map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code Action")
           map("n", "<leader>cr", vim.lsp.buf.rename, "Rename")
           map("n", "<leader>cR", function()
             require("snacks").rename.rename_file()
@@ -386,6 +354,27 @@ return {
         "dockerls",
         "docker_compose_language_service",
       })
+
+      -- ╔════════════════════════════════════════════════════════════════════╗
+      -- ║              FIX: Attach LSP to already opened buffers             ║
+      -- ║       (el primer buffer se abre antes de que el LSP esté listo)    ║
+      -- ╚════════════════════════════════════════════════════════════════════╝
+      vim.schedule(function()
+        for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+          if vim.api.nvim_buf_is_loaded(bufnr) and vim.bo[bufnr].buftype == "" then
+            local clients = vim.lsp.get_clients({ bufnr = bufnr })
+            if #clients == 0 then
+              -- Re-trigger FileType para que el LSP se attachee
+              local ft = vim.bo[bufnr].filetype
+              if ft and ft ~= "" then
+                vim.api.nvim_buf_call(bufnr, function()
+                  vim.api.nvim_exec_autocmds("FileType", { buffer = bufnr })
+                end)
+              end
+            end
+          end
+        end
+      end)
     end,
   },
 
@@ -448,12 +437,48 @@ return {
       end,
     },
     keys = {
-      { "gpd", function() require("goto-preview").goto_preview_definition() end, desc = "Preview Definition" },
-      { "gpD", function() require("goto-preview").goto_preview_declaration() end, desc = "Preview Declaration" },
-      { "gpi", function() require("goto-preview").goto_preview_implementation() end, desc = "Preview Implementation" },
-      { "gpy", function() require("goto-preview").goto_preview_type_definition() end, desc = "Preview Type Definition" },
-      { "gpr", function() require("goto-preview").goto_preview_references() end, desc = "Preview References" },
-      { "gP", function() require("goto-preview").close_all_win() end, desc = "Close all preview windows" },
+      {
+        "gpd",
+        function()
+          require("goto-preview").goto_preview_definition()
+        end,
+        desc = "Preview Definition",
+      },
+      {
+        "gpD",
+        function()
+          require("goto-preview").goto_preview_declaration()
+        end,
+        desc = "Preview Declaration",
+      },
+      {
+        "gpi",
+        function()
+          require("goto-preview").goto_preview_implementation()
+        end,
+        desc = "Preview Implementation",
+      },
+      {
+        "gpy",
+        function()
+          require("goto-preview").goto_preview_type_definition()
+        end,
+        desc = "Preview Type Definition",
+      },
+      {
+        "gpr",
+        function()
+          require("goto-preview").goto_preview_references()
+        end,
+        desc = "Preview References",
+      },
+      {
+        "gP",
+        function()
+          require("goto-preview").close_all_win()
+        end,
+        desc = "Close all preview windows",
+      },
     },
   },
 }

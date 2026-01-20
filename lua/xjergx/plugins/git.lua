@@ -121,34 +121,4 @@ return {
       },
     },
   },
-
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              NEOGIT                                      │
-  -- │                      Magit clone for Neovim                              │
-  -- └──────────────────────────────────────────────────────────────────────────┘
-  {
-    "NeogitOrg/neogit",
-    cmd = "Neogit",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "sindrets/diffview.nvim",
-    },
-    keys = {
-      { "<leader>gn", "<Cmd>Neogit<CR>", desc = "Neogit" },
-      { "<leader>gc", "<Cmd>Neogit commit<CR>", desc = "Neogit Commit" },
-      { "<leader>gp", "<Cmd>Neogit push<CR>", desc = "Neogit Push" },
-      { "<leader>gP", "<Cmd>Neogit pull<CR>", desc = "Neogit Pull" },
-    },
-    opts = {
-      graph_style = "unicode",
-      integrations = {
-        diffview = true,
-      },
-      signs = {
-        hunk = { "", "" },
-        item = { "", "" },
-        section = { "", "" },
-      },
-    },
-  },
 }

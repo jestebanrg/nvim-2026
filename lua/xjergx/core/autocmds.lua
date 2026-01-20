@@ -177,3 +177,16 @@ vim.api.nvim_create_autocmd("TermOpen", {
     vim.cmd("startinsert")
   end,
 })
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │                         FILETYPE DETECTION FIX                           │
+-- └──────────────────────────────────────────────────────────────────────────┘
+-- Fix para oil/snacks que no disparan filetype detect al abrir archivos
+vim.api.nvim_create_autocmd("BufEnter", {
+  group = augroup("filetype_detect_fix"),
+  callback = function()
+    if vim.bo.filetype == "" and vim.fn.expand("%:e") ~= "" then
+      vim.cmd("filetype detect")
+    end
+  end,
+})

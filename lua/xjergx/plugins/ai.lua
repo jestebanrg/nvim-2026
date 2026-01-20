@@ -1,14 +1,4 @@
--- ╔══════════════════════════════════════════════════════════════════════════╗
--- ║                              AI ASSISTANTS                               ║
--- ║               Claude Code, OpenCode, and AI integrations                 ║
--- ╚══════════════════════════════════════════════════════════════════════════╝
-
 return {
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              CODEIUM                                     │
-  -- │            AI-powered code completion (Windsurf engine)                  │
-  -- │                 https://github.com/Exafunction/codeium.nvim             │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "Exafunction/codeium.nvim",
     event = "InsertEnter",
@@ -41,11 +31,6 @@ return {
       { "<leader>cs", "<cmd>Codeium Chat<cr>", desc = "Codeium Chat" },
     },
   },
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                            CLAUDE CODE                                   │
-  -- │           Anthropic's Claude Code IDE integration for Neovim            │
-  -- │               https://github.com/coder/claudecode.nvim                  │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "coder/claudecode.nvim",
     dependencies = { "folke/snacks.nvim" },
@@ -98,12 +83,6 @@ return {
       { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
     },
   },
-
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                             OPENCODE                                     │
-  -- │          OpenCode AI assistant integration for Neovim                    │
-  -- │             https://github.com/NickvanDyke/opencode.nvim                │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "NickvanDyke/opencode.nvim",
     dependencies = {

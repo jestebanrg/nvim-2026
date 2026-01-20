@@ -32,7 +32,6 @@ return {
     },
     opts = {
       formatters_by_ft = {
-        -- JavaScript/TypeScript
         javascript = { "prettier" },
         javascriptreact = { "prettier" },
         typescript = { "prettier" },
@@ -57,13 +56,10 @@ return {
 
         -- Lua
         lua = { "stylua" },
-
         -- C#
         cs = { "csharpier" },
 
-        -- Shell
         sh = { "shfmt" },
-        bash = { "shfmt" },
         zsh = { "shfmt" },
 
         -- GraphQL

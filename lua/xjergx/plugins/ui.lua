@@ -1,14 +1,4 @@
--- ╔══════════════════════════════════════════════════════════════════════════╗
--- ║                              UI PLUGINS                                  ║
--- ║                    Colorscheme, Statusline, Noice                        ║
--- ║   (notify, dressing, indent-blankline replaced by snacks in snacks.lua)  ║
--- ╚══════════════════════════════════════════════════════════════════════════╝
-
 return {
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              KANAGAWA                                    │
-  -- │                     The one true colorscheme                             │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "rebelot/kanagawa.nvim",
     lazy = false,
@@ -76,7 +66,7 @@ return {
 
       local lualine_config = {
         options = {
-          theme = "catppuccin",
+          theme = "auto",
           component_separators = { left = "", right = "" },
           section_separators = { left = "", right = "" },
           disabled_filetypes = {
@@ -163,6 +153,9 @@ return {
   },
   {
     "b0o/incline.nvim",
+    dependencies = {
+      "nvim/nvim-web-devicons",
+    },
     config = function()
       local helpers = require("incline.helpers")
       local devicons = require("nvim-web-devicons")

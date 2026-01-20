@@ -41,36 +41,45 @@ local parsers = {
 }
 
 return {
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              TREESITTER                                  │
-  -- │           Neovim 0.11+ - Nueva API (NO soporta lazy loading)            │
-  -- │     https://github.com/nvim-treesitter/nvim-treesitter                  │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "nvim-treesitter/nvim-treesitter",
-    branch = "main", -- IMPORTANTE: main branch para la nueva API
+    branch = "main",
     build = ":TSUpdate",
-    lazy = false, -- NO soporta lazy loading según documentación oficial
+    lazy = false,
     config = function()
-      -- Instalar parsers (async por defecto)
       require("nvim-treesitter").install(parsers)
 
-      -- ┌────────────────────────────────────────────────────────────────────┐
-      -- │  HIGHLIGHTING - Usar API nativa de Neovim 0.11+                   │
-      -- │  vim.treesitter.start() se llama automáticamente para filetypes   │
-      -- │  que tienen parser instalado                                       │
-      -- └────────────────────────────────────────────────────────────────────┘
+      -- Función para activar treesitter en un buffer
+      local function enable_treesitter(buf)
+        -- Solo para buffers válidos con filetype
+        if not vim.api.nvim_buf_is_valid(buf) then
+          return
+        end
+        local ft = vim.bo[buf].filetype
+        if ft == "" then
+          return
+        end
+
+        local ok = pcall(vim.treesitter.start, buf)
+        if ok then
+          vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end
+      end
+
+      -- Autocmd para buffers FUTUROS
       vim.api.nvim_create_autocmd("FileType", {
         group = vim.api.nvim_create_augroup("TreesitterSetup", { clear = true }),
         callback = function(args)
-          -- Solo activar si hay parser disponible para este filetype
-          local ok = pcall(vim.treesitter.start, args.buf)
-          if ok then
-            -- Activar indentexpr basado en treesitter
-            vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-          end
+          enable_treesitter(args.buf)
         end,
       })
+
+      -- Activar treesitter en buffers que YA ESTÁN ABIERTOS
+      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_loaded(buf) then
+          enable_treesitter(buf)
+        end
+      end
 
       -- ┌────────────────────────────────────────────────────────────────────┐
       -- │  INCREMENTAL SELECTION                                             │
@@ -99,144 +108,139 @@ return {
     branch = "main",
     event = "VeryLazy",
     dependencies = { "nvim-treesitter/nvim-treesitter" },
-    config = function()
-      -- ┌──────────────────────────────────────────────────────────────────┐
-      -- │  Nueva API Neovim 0.11+ - Cada módulo se configura por separado │
-      -- └──────────────────────────────────────────────────────────────────┘
-      local select = require("nvim-treesitter-textobjects.select")
-      local move = require("nvim-treesitter-textobjects.move")
-      local swap = require("nvim-treesitter-textobjects.swap")
-
-      -- ┌──────────────────────────────────────────────────────────────────┐
-      -- │  SELECT - Seleccionar text objects con treesitter               │
-      -- └──────────────────────────────────────────────────────────────────┘
-      local select_keymaps = {
-        -- Funciones
-        ["af"] = "@function.outer",
-        ["if"] = "@function.inner",
-        -- Clases
-        ["ac"] = "@class.outer",
-        ["ic"] = "@class.inner",
-        -- Parámetros
-        ["aa"] = "@parameter.outer",
-        ["ia"] = "@parameter.inner",
-        -- Loops
-        ["al"] = "@loop.outer",
-        ["il"] = "@loop.inner",
-        -- Condicionales
-        ["ai"] = "@conditional.outer",
-        ["ii"] = "@conditional.inner",
-        -- Comentarios
-        ["a/"] = "@comment.outer",
-        -- Bloques
-        ["ab"] = "@block.outer",
-        ["ib"] = "@block.inner",
-        -- Calls
-        ["am"] = "@call.outer",
-        ["im"] = "@call.inner",
-      }
-
-      for keymap, query in pairs(select_keymaps) do
-        vim.keymap.set({ "x", "o" }, keymap, function()
-          select.select_textobject(query, "textobjects", nil, { lookahead = true })
-        end, { desc = "Select " .. query })
-      end
-
-      -- ┌──────────────────────────────────────────────────────────────────┐
-      -- │  MOVE - Moverse entre text objects                              │
-      -- └──────────────────────────────────────────────────────────────────┘
-      local move_keymaps = {
-        -- goto_next_start
-        { "]f", "@function.outer", "goto_next_start", "Next function start" },
-        { "]c", "@class.outer", "goto_next_start", "Next class start" },
-        { "]a", "@parameter.inner", "goto_next_start", "Next parameter" },
-        { "]b", "@block.outer", "goto_next_start", "Next block" },
-        { "]m", "@call.outer", "goto_next_start", "Next call" },
-        -- goto_next_end
-        { "]F", "@function.outer", "goto_next_end", "Next function end" },
-        { "]C", "@class.outer", "goto_next_end", "Next class end" },
-        -- goto_previous_start
-        { "[f", "@function.outer", "goto_previous_start", "Prev function start" },
-        { "[c", "@class.outer", "goto_previous_start", "Prev class start" },
-        { "[a", "@parameter.inner", "goto_previous_start", "Prev parameter" },
-        { "[b", "@block.outer", "goto_previous_start", "Prev block" },
-        { "[m", "@call.outer", "goto_previous_start", "Prev call" },
-        -- goto_previous_end
-        { "[F", "@function.outer", "goto_previous_end", "Prev function end" },
-        { "[C", "@class.outer", "goto_previous_end", "Prev class end" },
-      }
-
-      for _, mapping in ipairs(move_keymaps) do
-        local key, query, direction, desc = mapping[1], mapping[2], mapping[3], mapping[4]
-        vim.keymap.set({ "n", "x", "o" }, key, function()
-          move[direction](query, "textobjects")
-        end, { desc = desc })
-      end
-
-      -- ┌──────────────────────────────────────────────────────────────────┐
-      -- │  SWAP - Intercambiar elementos                                  │
-      -- └──────────────────────────────────────────────────────────────────┘
-      vim.keymap.set("n", "<leader>a", function()
-        swap.swap_next("@parameter.inner", "textobjects")
-      end, { desc = "Swap next parameter" })
-
-      vim.keymap.set("n", "<leader>A", function()
-        swap.swap_previous("@parameter.inner", "textobjects")
-      end, { desc = "Swap prev parameter" })
-
-      -- ┌──────────────────────────────────────────────────────────────────┐
-      -- │  REPEATABLE MOVES - Repetir movimientos con ; y ,               │
-      -- └──────────────────────────────────────────────────────────────────┘
-      local ts_repeat_move = require("nvim-treesitter-textobjects.repeatable_move")
-
-      -- ; repite hacia adelante, , repite hacia atrás (consistente)
-      vim.keymap.set({ "n", "x", "o" }, ";", ts_repeat_move.repeat_last_move_next, { desc = "Repeat last move next" })
-      vim.keymap.set(
-        { "n", "x", "o" },
-        ",",
-        ts_repeat_move.repeat_last_move_previous,
-        { desc = "Repeat last move prev" }
-      )
-
-      -- Hacer f, F, t, T también repetibles con ; y ,
-      vim.keymap.set({ "n", "x", "o" }, "f", ts_repeat_move.builtin_f_expr, { expr = true })
-      vim.keymap.set({ "n", "x", "o" }, "F", ts_repeat_move.builtin_F_expr, { expr = true })
-      vim.keymap.set({ "n", "x", "o" }, "t", ts_repeat_move.builtin_t_expr, { expr = true })
-      vim.keymap.set({ "n", "x", "o" }, "T", ts_repeat_move.builtin_T_expr, { expr = true })
-    end,
+    {
+      "nvim-treesitter/nvim-treesitter-context",
+      event = "VeryLazy",
+      opts = {
+        enable = true,
+        max_lines = 3,
+        min_window_height = 20,
+        multiline_threshold = 1, -- Mostrar contexto en una sola línea si es posible
+        mode = "cursor", -- Mostrar contexto basado en la posición del cursor
+      },
+      keys = {
+        {
+          "<leader>ut",
+          function()
+            require("treesitter-context").toggle()
+          end,
+          desc = "Toggle Treesitter Context",
+        },
+        {
+          "[C",
+          function()
+            require("treesitter-context").go_to_context()
+          end,
+          desc = "Go to context",
+        },
+      },
+    },
   },
 
   -- ┌──────────────────────────────────────────────────────────────────────────┐
   -- │                         TREESITTER CONTEXT                               │
   -- │            Muestra el contexto de la función/clase actual                │
   -- └──────────────────────────────────────────────────────────────────────────┘
-  {
-    "nvim-treesitter/nvim-treesitter-context",
-    event = "VeryLazy",
-    opts = {
-      enable = true,
-      max_lines = 3,
-      min_window_height = 20,
-      multiline_threshold = 1, -- Mostrar contexto en una sola línea si es posible
-      mode = "cursor", -- Mostrar contexto basado en la posición del cursor
-    },
-    keys = {
-      {
-        "<leader>ut",
-        function()
-          require("treesitter-context").toggle()
-        end,
-        desc = "Toggle Treesitter Context",
-      },
-      {
-        "[C",
-        function()
-          require("treesitter-context").go_to_context()
-        end,
-        desc = "Go to context",
-      },
-    },
-  },
+  config = function()
+    -- ┌──────────────────────────────────────────────────────────────────┐
+    -- │  Nueva API Neovim 0.11+ - Cada módulo se configura por separado │
+    -- └──────────────────────────────────────────────────────────────────┘
+    local select = require("nvim-treesitter-textobjects.select")
+    local move = require("nvim-treesitter-textobjects.move")
+    local swap = require("nvim-treesitter-textobjects.swap")
+
+    -- ┌──────────────────────────────────────────────────────────────────┐
+    -- │  SELECT - Seleccionar text objects con treesitter               │
+    -- └──────────────────────────────────────────────────────────────────┘
+    local select_keymaps = {
+      -- Funciones
+      ["af"] = "@function.outer",
+      ["if"] = "@function.inner",
+      -- Clases
+      ["ac"] = "@class.outer",
+      ["ic"] = "@class.inner",
+      -- Parámetros
+      ["aa"] = "@parameter.outer",
+      ["ia"] = "@parameter.inner",
+      -- Loops
+      ["al"] = "@loop.outer",
+      ["il"] = "@loop.inner",
+      -- Condicionales
+      ["ai"] = "@conditional.outer",
+      ["ii"] = "@conditional.inner",
+      -- Comentarios
+      ["a/"] = "@comment.outer",
+      -- Bloques
+      ["ab"] = "@block.outer",
+      ["ib"] = "@block.inner",
+      -- Calls
+      ["am"] = "@call.outer",
+      ["im"] = "@call.inner",
+    }
+
+    for keymap, query in pairs(select_keymaps) do
+      vim.keymap.set({ "x", "o" }, keymap, function()
+        select.select_textobject(query, "textobjects", nil, { lookahead = true })
+      end, { desc = "Select " .. query })
+    end
+
+    -- ┌──────────────────────────────────────────────────────────────────┐
+    -- │  MOVE - Moverse entre text objects                              │
+    -- └──────────────────────────────────────────────────────────────────┘
+    local move_keymaps = {
+      -- goto_next_start
+      { "]f", "@function.outer", "goto_next_start", "Next function start" },
+      { "]c", "@class.outer", "goto_next_start", "Next class start" },
+      { "]a", "@parameter.inner", "goto_next_start", "Next parameter" },
+      { "]b", "@block.outer", "goto_next_start", "Next block" },
+      { "]m", "@call.outer", "goto_next_start", "Next call" },
+      -- goto_next_end
+      { "]F", "@function.outer", "goto_next_end", "Next function end" },
+      { "]C", "@class.outer", "goto_next_end", "Next class end" },
+      -- goto_previous_start
+      { "[f", "@function.outer", "goto_previous_start", "Prev function start" },
+      { "[c", "@class.outer", "goto_previous_start", "Prev class start" },
+      { "[a", "@parameter.inner", "goto_previous_start", "Prev parameter" },
+      { "[b", "@block.outer", "goto_previous_start", "Prev block" },
+      { "[m", "@call.outer", "goto_previous_start", "Prev call" },
+      -- goto_previous_end
+      { "[F", "@function.outer", "goto_previous_end", "Prev function end" },
+      { "[C", "@class.outer", "goto_previous_end", "Prev class end" },
+    }
+
+    for _, mapping in ipairs(move_keymaps) do
+      local key, query, direction, desc = mapping[1], mapping[2], mapping[3], mapping[4]
+      vim.keymap.set({ "n", "x", "o" }, key, function()
+        move[direction](query, "textobjects")
+      end, { desc = desc })
+    end
+
+    -- ┌──────────────────────────────────────────────────────────────────┐
+    -- │  SWAP - Intercambiar elementos                                  │
+    -- └──────────────────────────────────────────────────────────────────┘
+    vim.keymap.set("n", "<leader>a", function()
+      swap.swap_next("@parameter.inner", "textobjects")
+    end, { desc = "Swap next parameter" })
+
+    vim.keymap.set("n", "<leader>A", function()
+      swap.swap_previous("@parameter.inner", "textobjects")
+    end, { desc = "Swap prev parameter" })
+
+    -- ┌──────────────────────────────────────────────────────────────────┐
+    -- │  REPEATABLE MOVES - Repetir movimientos con ; y ,               │
+    -- └──────────────────────────────────────────────────────────────────┘
+    local ts_repeat_move = require("nvim-treesitter-textobjects.repeatable_move")
+
+    -- ; repite hacia adelante, , repite hacia atrás (consistente)
+    vim.keymap.set({ "n", "x", "o" }, ";", ts_repeat_move.repeat_last_move_next, { desc = "Repeat last move next" })
+    vim.keymap.set({ "n", "x", "o" }, ",", ts_repeat_move.repeat_last_move_previous, { desc = "Repeat last move prev" })
+
+    -- Hacer f, F, t, T también repetibles con ; y ,
+    vim.keymap.set({ "n", "x", "o" }, "f", ts_repeat_move.builtin_f_expr, { expr = true })
+    vim.keymap.set({ "n", "x", "o" }, "F", ts_repeat_move.builtin_F_expr, { expr = true })
+    vim.keymap.set({ "n", "x", "o" }, "t", ts_repeat_move.builtin_t_expr, { expr = true })
+    vim.keymap.set({ "n", "x", "o" }, "T", ts_repeat_move.builtin_T_expr, { expr = true })
+  end,
 
   -- ┌──────────────────────────────────────────────────────────────────────────┐
   -- │                            NVIM-TS-AUTOTAG                               │
@@ -287,34 +291,6 @@ return {
         update_n_lines = "gsn", -- Update `n_lines`
       },
     },
-  },
-
-  -- Mini.ai - Extended text objects
-  {
-    "echasnovski/mini.ai",
-    event = "VeryLazy",
-    opts = function()
-      local ai = require("mini.ai")
-      return {
-        n_lines = 500,
-        custom_textobjects = {
-          o = ai.gen_spec.treesitter({
-            a = { "@block.outer", "@conditional.outer", "@loop.outer" },
-            i = { "@block.inner", "@conditional.inner", "@loop.inner" },
-          }),
-          f = ai.gen_spec.treesitter({ a = "@function.outer", i = "@function.inner" }),
-          c = ai.gen_spec.treesitter({ a = "@class.outer", i = "@class.inner" }),
-          t = { "<([%p%w]-)%f[^<%w][^<>]->.-</%1>", "^<.->().googletag.teleport" },
-          d = { "%f[%d]%d+" }, -- Digits
-          e = { -- Word with case
-            { "%u[%l%d]+%f[^%l%d]", "%f[%S][%l%d]+%f[^%l%d]", "%f[%P][%l%d]+%f[^%l%d]", "^[%l%d]+%f[^%l%d]" },
-            "^().*googletag.teleport",
-          },
-          u = ai.gen_spec.function_call(), -- u for "usage" (function call)
-          U = ai.gen_spec.function_call({ name_pattern = "[%w_]" }), -- sin dot
-        },
-      }
-    end,
   },
 
   -- Mini.comment - Comments
@@ -447,7 +423,7 @@ return {
   {
     "MeanderingProgrammer/render-markdown.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.icons" }, -- if you use standalone mini plugins
-    opts = {},
+    config = true,
   },
   {
     "chrisgrieser/nvim-rip-substitute",
@@ -463,5 +439,11 @@ return {
         desc = " rip substitute",
       },
     },
+  },
+  {
+    "romus204/referencer.nvim",
+    config = function()
+      require("referencer").setup()
+    end,
   },
 }

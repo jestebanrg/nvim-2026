@@ -49,8 +49,8 @@ opt.wrap = false
 opt.linebreak = true
 opt.showmode = false -- Lualine ya lo muestra
 opt.showcmd = false
-opt.laststatus = 2 -- Global statusline
-opt.cmdheight = 0
+opt.laststatus = 3 -- Global statusline (una sola para todas las ventanas)
+opt.cmdheight = 1 -- Mostrar línea de comandos (0 causa gaps visuales)
 opt.pumheight = 10 -- Máximo items en popup menu
 opt.pumblend = 10 -- Transparencia del popup
 opt.winblend = 10 -- Transparencia de ventanas flotantes
@@ -128,7 +128,6 @@ local disabled_built_ins = {
   "2html_plugin",
   "logipat",
   "rrhelper",
-  "spellfile_plugin",
   "matchit",
 }
 
