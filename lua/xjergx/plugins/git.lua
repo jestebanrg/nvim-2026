@@ -1,9 +1,3 @@
--- ╔══════════════════════════════════════════════════════════════════════════╗
--- ║                              GIT PLUGINS                                 ║
--- ║                Git integration, signs, diffview, neogit                  ║
--- ║           (lazygit.nvim replaced by snacks.lazygit in snacks.lua)        ║
--- ╚══════════════════════════════════════════════════════════════════════════╝
-
 return {
   -- ┌──────────────────────────────────────────────────────────────────────────┐
   -- │                              GITSIGNS                                    │
@@ -96,6 +90,19 @@ return {
         -- Text object
         map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "GitSigns Select Hunk")
       end,
+    },
+  },
+
+  -- ┌──────────────────────────────────────────────────────────────────────────┐
+  -- │                              FUGITIVE                                    │
+  -- │                 The ultimate Git wrapper (tpope classic)                 │
+  -- └──────────────────────────────────────────────────────────────────────────┘
+  {
+    "tpope/vim-fugitive",
+    cmd = { "Git", "G", "Gread", "Gwrite", "Gdiffsplit", "Gvdiffsplit" },
+    keys = {
+      { "<leader>gB", "<Cmd>Git blame<CR>", desc = "Git Blame (Fugitive)" },
+      { "<leader>gs", "<Cmd>Git<CR>", desc = "Git Status (Fugitive)" },
     },
   },
 

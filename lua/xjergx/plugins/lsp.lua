@@ -244,6 +244,13 @@ return {
             EnableEditorConfigSupport = true,
             OrganizeImports = true,
           },
+          OmnisharpOptions = {
+            EnableEditorConfigSupport = true,
+            EnableMSBuildLoadProjectsOnDemand = true,
+            CodeActionsOnSave = {
+              Enable = true,
+            },
+          },
           RoslynExtensionsOptions = {
             EnableAnalyzersSupport = true,
             EnableImportCompletion = true,

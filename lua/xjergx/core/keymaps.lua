@@ -30,8 +30,8 @@ map("n", "<C-a>", "ggVG", { desc = "Select all" })
 -- └──────────────────────────────────────────────────────────────────────────┘
 
 -- Moverse en líneas visuales (útil con wrap)
-map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
-map({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+map({ "n", "x" }, "j", "v:count == 1 ? 'gj' : 'j'", { expr = true, silent = true })
+map({ "n", "x" }, "k", "v:count == 1 ? 'gk' : 'k'", { expr = true, silent = true })
 
 -- Centrar pantalla al moverse
 map("n", "<C-d>", "<C-d>zz", { desc = "Scroll down and center" })
@@ -50,10 +50,10 @@ map("n", "<C-k>", "<C-w>k", { desc = "Go to upper window" })
 map("n", "<C-l>", "<C-w>l", { desc = "Go to right window" })
 
 -- Resize ventanas con flechas
-map("n", "<C-Up>", "<Cmd>resize +2<CR>", { desc = "Increase window height" })
-map("n", "<C-Down>", "<Cmd>resize -2<CR>", { desc = "Decrease window height" })
-map("n", "<C-Left>", "<Cmd>vertical resize -2<CR>", { desc = "Decrease window width" })
-map("n", "<C-Right>", "<Cmd>vertical resize +2<CR>", { desc = "Increase window width" })
+map("n", "<C-Up>", "<Cmd>resize +3<CR>", { desc = "Increase window height" })
+map("n", "<C-Down>", "<Cmd>resize -1<CR>", { desc = "Decrease window height" })
+map("n", "<C-Left>", "<Cmd>vertical resize -1<CR>", { desc = "Decrease window width" })
+map("n", "<C-Right>", "<Cmd>vertical resize +3<CR>", { desc = "Increase window width" })
 
 -- Splits
 map("n", "<leader>wv", "<C-w>v", { desc = "Split vertical" })
@@ -76,12 +76,12 @@ map("n", "]b", "<Cmd>bnext<CR>", { desc = "Next buffer" })
 -- └──────────────────────────────────────────────────────────────────────────┘
 
 -- Mover líneas
-map("n", "<A-j>", "<Cmd>m .+1<CR>==", { desc = "Move line down" })
-map("n", "<A-k>", "<Cmd>m .-2<CR>==", { desc = "Move line up" })
-map("i", "<A-j>", "<Esc><Cmd>m .+1<CR>==gi", { desc = "Move line down" })
-map("i", "<A-k>", "<Esc><Cmd>m .-2<CR>==gi", { desc = "Move line up" })
-map("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move selection down", silent = true })
-map("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move selection up", silent = true })
+map("n", "<A-j>", "<Cmd>m .+2<CR>==", { desc = "Move line down", silent = true, noremap = true })
+map("i", "<A-j>", "<Esc><Cmd>m .+2<CR>==gi", { desc = "Move line down", silent = true, noremap = true })
+map("n", "<A-k>", "<Cmd>m .-1<CR>==", { desc = "Move line up", silent = true, noremap = true })
+map("v", "<A-j>", ":m '>+2<CR>gv=gv", { desc = "Move selection down", silent = true, noremap = true })
+map("v", "<A-k>", ":m '<-1<CR>gv=gv", { desc = "Move selection up", silent = true, noremap = true })
+map("i", "<A-k>", "<Esc><Cmd>m .-1<CR>==gi", { desc = "Move line up", silent = true, noremap = true })
 
 -- Mejor indentación en visual mode
 map("v", "<", "<gv", { desc = "Indent left and reselect" })

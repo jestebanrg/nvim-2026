@@ -1,20 +1,9 @@
--- ╔══════════════════════════════════════════════════════════════════════════╗
--- ║                              NAVIGATION                                  ║
--- ║              Oil, Harpoon, Marker Groups, Flash, and tmux nav            ║
--- ║          (Telescope replaced by snacks.picker in snacks.lua)             ║
--- ╚══════════════════════════════════════════════════════════════════════════╝
-
 return {
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              OIL.NVIM                                    │
-  -- │                  File explorer as a buffer (like dirvish)                │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "stevearc/oil.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     keys = {
       { "-", "<Cmd>Oil<CR>", desc = "Open Oil" },
-      { "<leader>e", "<Cmd>Oil<CR>", desc = "Explorer (Oil)" },
     },
     opts = {
       default_file_explorer = true,
@@ -58,73 +47,6 @@ return {
       },
     },
   },
-
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              HARPOON                                     │
-  -- │                  Quick file navigation (bookmarks)                       │
-  -- └──────────────────────────────────────────────────────────────────────────┘
-  {
-    "ThePrimeagen/harpoon",
-    branch = "harpoon2",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    opts = {
-      settings = {
-        save_on_toggle = true,
-        sync_on_ui_close = true,
-      },
-    },
-    keys = function()
-      local keys = {
-        {
-          "<leader>ha",
-          function()
-            require("harpoon"):list():add()
-          end,
-          desc = "Harpoon Add File",
-        },
-        {
-          "<leader>hh",
-          function()
-            local harpoon = require("harpoon")
-            harpoon.ui:toggle_quick_menu(harpoon:list())
-          end,
-          desc = "Harpoon Menu",
-        },
-        {
-          "<leader>hp",
-          function()
-            require("harpoon"):list():prev()
-          end,
-          desc = "Harpoon Prev",
-        },
-        {
-          "<leader>hn",
-          function()
-            require("harpoon"):list():next()
-          end,
-          desc = "Harpoon Next",
-        },
-      }
-
-      -- Quick access 1-5
-      for i = 1, 5 do
-        table.insert(keys, {
-          "<leader>" .. i,
-          function()
-            require("harpoon"):list():select(i)
-          end,
-          desc = "Harpoon to File " .. i,
-        })
-      end
-
-      return keys
-    end,
-  },
-
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              MARKER GROUPS                               │
-  -- │                  Persistent code notes without modifying code            │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "jameswolensky/marker-groups.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
@@ -153,11 +75,6 @@ return {
       { "<leader>ml", "<cmd>MarkerList<cr>", desc = "List markers in buffer" },
     },
   },
-
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              FLASH.NVIM                                  │
-  -- │                  Navigate code like a ninja (hop/leap)                   │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "folke/flash.nvim",
     event = "VeryLazy",
@@ -227,10 +144,6 @@ return {
     },
   },
 
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              TMUX NAVIGATOR                              │
-  -- │                  Seamless navigation between vim and tmux                │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "christoomey/vim-tmux-navigator",
     lazy = false,

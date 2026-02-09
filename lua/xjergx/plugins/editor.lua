@@ -1,11 +1,3 @@
--- ╔══════════════════════════════════════════════════════════════════════════╗
--- ║                              EDITOR PLUGINS                              ║
--- ║          Treesitter, Autopairs, Surround, Comments, etc.                 ║
--- ╚══════════════════════════════════════════════════════════════════════════╝
-
--- ┌──────────────────────────────────────────────────────────────────────────┐
--- │                         PARSERS A INSTALAR                               │
--- └──────────────────────────────────────────────────────────────────────────┘
 local parsers = {
   -- Tu stack
   "typescript",
@@ -136,22 +128,10 @@ return {
       },
     },
   },
-
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                         TREESITTER CONTEXT                               │
-  -- │            Muestra el contexto de la función/clase actual                │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   config = function()
-    -- ┌──────────────────────────────────────────────────────────────────┐
-    -- │  Nueva API Neovim 0.11+ - Cada módulo se configura por separado │
-    -- └──────────────────────────────────────────────────────────────────┘
     local select = require("nvim-treesitter-textobjects.select")
     local move = require("nvim-treesitter-textobjects.move")
     local swap = require("nvim-treesitter-textobjects.swap")
-
-    -- ┌──────────────────────────────────────────────────────────────────┐
-    -- │  SELECT - Seleccionar text objects con treesitter               │
-    -- └──────────────────────────────────────────────────────────────────┘
     local select_keymaps = {
       -- Funciones
       ["af"] = "@function.outer",
@@ -225,10 +205,6 @@ return {
     vim.keymap.set("n", "<leader>A", function()
       swap.swap_previous("@parameter.inner", "textobjects")
     end, { desc = "Swap prev parameter" })
-
-    -- ┌──────────────────────────────────────────────────────────────────┐
-    -- │  REPEATABLE MOVES - Repetir movimientos con ; y ,               │
-    -- └──────────────────────────────────────────────────────────────────┘
     local ts_repeat_move = require("nvim-treesitter-textobjects.repeatable_move")
 
     -- ; repite hacia adelante, , repite hacia atrás (consistente)
@@ -252,9 +228,9 @@ return {
     event = { "BufReadPost", "BufNewFile" },
     opts = {
       opts = {
-        enable_close = true, -- Auto close tags
-        enable_rename = true, -- Auto rename pairs of tags
-        enable_close_on_slash = false, -- Auto close on trailing </
+        enable_close = true,
+        enable_rename = true,
+        enable_close_on_slash = true, -- Auto close on trailing </
       },
     },
   },
@@ -308,11 +284,6 @@ return {
       "JoosepAlviste/nvim-ts-context-commentstring",
     },
   },
-
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                         TS CONTEXT COMMENTSTRING                         │
-  -- │              Comentarios correctos según contexto (JSX, etc)             │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "JoosepAlviste/nvim-ts-context-commentstring",
     lazy = true,
@@ -320,11 +291,6 @@ return {
       enable_autocmd = false,
     },
   },
-
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              TODO COMMENTS                               │
-  -- │                    Highlight TODO, FIXME, etc                            │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "folke/todo-comments.nvim",
     event = { "BufReadPost", "BufNewFile" },
@@ -422,8 +388,50 @@ return {
   },
   {
     "MeanderingProgrammer/render-markdown.nvim",
-    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.icons" }, -- if you use standalone mini plugins
-    config = true,
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.nvim" }, -- if you use the mini.nvim suite
+    ---@module 'render-markdown'
+    opts = {
+      completions = { lsp = { enabled = true } },
+      heading = {
+        enabled = true,
+        sign = true,
+        width = "full",
+        icons = { "󰲡 ", "󰲣 ", "󰲥 ", "󰲧 ", "󰲩 ", "󰲫 " },
+        left_pad = 1,
+      },
+      bullet = {
+        enabled = true,
+        icons = { "●", "○", "◆", "◇" },
+        left_pad = 0,
+        right_pad = 0,
+        highlight = "RenderMarkdownBullet",
+      },
+      checkbox = {
+        enabled = true,
+        custom = {
+          todo = { raw = "[-]", rendered = "󰥔 ", highlight = "RenderMarkdownTodo", scope_highlight = nil },
+        },
+        left_pad = 0,
+        right_pad = 1,
+        unchecked = {
+          -- Replaces '[ ]' of 'task_list_marker_unchecked'.
+          icon = "󰄱 ",
+          -- Highlight for the unchecked icon.
+          highlight = "RenderMarkdownUnchecked",
+          -- Highlight for item associated with unchecked checkbox.
+          scope_highlight = nil,
+        },
+        checked = {
+          -- Replaces '[x]' of 'task_list_marker_checked'.
+          icon = "󰱒 ",
+          -- Highlight for the checked icon.
+          highlight = "RenderMarkdownChecked",
+          -- Highlight for item associated with checked checkbox.
+          scope_highlight = nil,
+        },
+        highlight = "RenderMarkdownCheckbox",
+      },
+    },
   },
   {
     "chrisgrieser/nvim-rip-substitute",
@@ -444,6 +452,141 @@ return {
     "romus204/referencer.nvim",
     config = function()
       require("referencer").setup()
+    end,
+  },
+
+  -- ┌──────────────────────────────────────────────────────────────────────────┐
+  -- │                              OBSIDIAN.NVIM                               │
+  -- │                    Integración con vaults de Obsidian                    │
+  -- │               https://github.com/epwalsh/obsidian.nvim                   │
+  -- └──────────────────────────────────────────────────────────────────────────┘
+  {
+    "epwalsh/obsidian.nvim",
+    version = "*",
+    lazy = true,
+    ft = "markdown",
+    event = {
+      "BufReadPre " .. vim.fn.expand("~") .. "/vault/**.md",
+      "BufNewFile " .. vim.fn.expand("~") .. "/vault/**.md",
+    },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-telescope/telescope.nvim",
+    },
+    opts = {
+      workspaces = {
+        {
+          name = "vault",
+          path = "~/vault",
+        },
+      },
+      notes_subdir = "inbox",
+      new_notes_location = "notes_subdir",
+      templates = {
+        folder = "templates",
+        date_format = "%Y-%m-%d",
+        time_format = "%H:%M",
+        substitutions = {},
+      },
+      daily_notes = {
+        folder = "daily",
+        date_format = "%Y-%m-%d",
+        alias_format = "%B %-d, %Y",
+        template = "daily.md",
+      },
+      completion = {
+        nvim_cmp = false,
+        min_chars = 2,
+      },
+      mappings = {
+        ["gf"] = {
+          action = function()
+            return require("obsidian").util.gf_passthrough()
+          end,
+          opts = { noremap = false, expr = true, buffer = true },
+        },
+        ["<leader>nc"] = {
+          action = function()
+            return require("obsidian").util.toggle_checkbox()
+          end,
+          opts = { buffer = true },
+        },
+        ["<cr>"] = {
+          action = function()
+            return require("obsidian").util.smart_action()
+          end,
+          opts = { buffer = true, expr = true },
+        },
+      },
+      -- picker = {
+      --   name = "telescope",
+      -- },
+      ui = {
+        enable = true,
+        checkboxes = {
+          [" "] = { char = "󰄱", hl_group = "ObsidianTodo" },
+          ["x"] = { char = "", hl_group = "ObsidianDone" },
+          [">"] = { char = "", hl_group = "ObsidianRightArrow" },
+          ["~"] = { char = "󰰱", hl_group = "ObsidianTilde" },
+        },
+      },
+    },
+    keys = {
+      { "<leader>nn", "<Cmd>ObsidianNew<CR>", desc = "New Note" },
+      { "<leader>nT", "<Cmd>ObsidianNewFromTemplate<CR>", desc = "New from Template" },
+      { "<leader>ni", "<Cmd>ObsidianTemplate<CR>", desc = "Insert Template" },
+      { "<leader>ns", "<Cmd>ObsidianSearch<CR>", desc = "Search Notes" },
+      { "<leader>nq", "<Cmd>ObsidianQuickSwitch<CR>", desc = "Quick Switch" },
+      { "<leader>nb", "<Cmd>ObsidianBacklinks<CR>", desc = "Backlinks" },
+      { "<leader>nt", "<Cmd>ObsidianToday<CR>", desc = "Today's Note" },
+      { "<leader>ny", "<Cmd>ObsidianYesterday<CR>", desc = "Yesterday's Note" },
+      { "<leader>nl", "<Cmd>ObsidianLinks<CR>", desc = "Links in Note" },
+      { "<leader>nf", "<Cmd>ObsidianFollowLink<CR>", desc = "Follow Link" },
+      { "<leader>np", "<Cmd>ObsidianPasteImg<CR>", desc = "Paste Image" },
+      { "<leader>nr", "<Cmd>ObsidianRename<CR>", desc = "Rename Note" },
+    },
+  },
+  {
+    "MagicDuck/grug-far.nvim",
+    opts = { headerMaxWidth = 80 },
+    cmd = "GrugFar",
+    keys = {
+      {
+        "<leader>sr",
+        function()
+          local grug = require("grug-far")
+          local ext = vim.bo.buftype == "" and vim.fn.expand("%:e")
+          grug.open({
+            transient = true,
+            prefills = {
+              filesFilter = ext and ext ~= "" and "*." .. ext or nil,
+            },
+          })
+        end,
+        mode = { "n", "v" },
+        desc = "Search and Replace",
+      },
+      {
+        "<leader>sR",
+        function()
+          local grug = require("grug-far")
+          grug.open({
+            transient = true,
+            prefills = {
+              paths = vim.fn.expand("%"),
+            },
+          })
+        end,
+        mode = { "n", "v" },
+        desc = "Search and Replace (current file)",
+      },
+    },
+  },
+  {
+    "dmmulroy/tsc.nvim",
+    lazy = false,
+    config = function()
+      require("tsc").setup({})
     end,
   },
 }

@@ -74,7 +74,14 @@ return {
           },
         },
         sections = {
-          lualine_a = { "mode" },
+          lualine_a = {
+            {
+              "mode",
+              fmt = function(str)
+                return " " .. str
+              end,
+            },
+          },
           lualine_b = { "branch", "diff", "diagnostics" },
           lualine_c = {
             {
@@ -153,9 +160,6 @@ return {
   },
   {
     "b0o/incline.nvim",
-    dependencies = {
-      "nvim/nvim-web-devicons",
-    },
     config = function()
       local helpers = require("incline.helpers")
       local devicons = require("nvim-web-devicons")
@@ -181,6 +185,7 @@ return {
         end,
       })
     end,
+    event = "VeryLazy",
   },
   {
     "rachartier/tiny-code-action.nvim",
@@ -204,12 +209,6 @@ return {
       },
     },
   },
-
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              NOICE.NVIM                                  │
-  -- │             Mejor UI para cmdline, messages y popupmenu                  │
-  -- │      (Keeping this - more features than snacks for cmdline/LSP)         │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
     "folke/noice.nvim",
     event = "VeryLazy",
@@ -217,6 +216,7 @@ return {
       "MunifTanjim/nui.nvim",
     },
     opts = {
+      transparent = true,
       lsp = {
         override = {
           ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
@@ -349,13 +349,5 @@ return {
     keys = {
       { "<leader>uT", "<Cmd>TransparentToggle<CR>", desc = "Toggle Transparency" },
     },
-  },
-
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              WEB DEVICONS                                │
-  -- └──────────────────────────────────────────────────────────────────────────┘
-  {
-    "nvim-tree/nvim-web-devicons",
-    lazy = true,
   },
 }
