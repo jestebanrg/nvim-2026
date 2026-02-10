@@ -23,6 +23,7 @@ return {
         { "<leader>m", group = "markers" },
         { "<leader>mg", group = "marker groups" },
         { "<leader>q", group = "session" },
+        { "<leader>r", group = "refactor" },
         { "<leader>s", group = "search" },
         { "<leader>sn", group = "noice" },
         { "<leader>t", group = "terminal" },

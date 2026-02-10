@@ -105,6 +105,35 @@ map("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
 map("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
 map("n", "<leader>cd", vim.diagnostic.open_float, { desc = "Line diagnostics" })
 
+-- LSP organize imports
+map("n", "<leader>oi", function()
+  vim.lsp.buf.code_action({
+    apply = true,
+    context = { only = { "source.organizeImports" }, diagnostics = {} },
+  })
+end, { desc = "Organize imports" })
+
+-- Toggle auto organize imports on save (vtsls/roslyn)
+map("n", "<leader>uO", function()
+  vim.g.lsp_auto_organize_imports = not (vim.g.lsp_auto_organize_imports == false)
+  vim.g.vtsls_auto_organize_imports = vim.g.lsp_auto_organize_imports
+  vim.notify(
+    "lsp auto organize imports (vtsls/roslyn): " .. (vim.g.lsp_auto_organize_imports and "ON" or "OFF"),
+    vim.log.levels.INFO,
+    { title = "LSP" }
+  )
+end, { desc = "Toggle auto organize imports" })
+
+-- Toggle auto add missing imports on save (vtsls)
+map("n", "<leader>uM", function()
+  vim.g.vtsls_auto_add_missing_imports = not (vim.g.vtsls_auto_add_missing_imports == false)
+  vim.notify(
+    "vtsls auto add missing imports: " .. (vim.g.vtsls_auto_add_missing_imports and "ON" or "OFF"),
+    vim.log.levels.INFO,
+    { title = "LSP" }
+  )
+end, { desc = "Toggle auto add missing imports" })
+
 -- ┌──────────────────────────────────────────────────────────────────────────┐
 -- │                              QUICKFIX                                    │
 -- └──────────────────────────────────────────────────────────────────────────┘

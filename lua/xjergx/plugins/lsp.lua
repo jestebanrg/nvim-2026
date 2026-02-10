@@ -4,6 +4,10 @@ return {
     cmd = "Mason",
     build = ":MasonUpdate",
     opts = {
+      registries = {
+        "github:mason-org/mason-registry",
+        "github:Crashdummyy/mason-registry",
+      },
       ui = {
         border = "rounded",
         icons = {
@@ -21,7 +25,6 @@ return {
       ensure_installed = {
         "vtsls", -- TypeScript/JavaScript (reemplaza ts_ls)
         "vue_ls", -- Vue 3 (formerly volar)
-        "omnisharp", -- C#
         "html",
         "cssls",
         "emmet_ls",
@@ -84,6 +87,18 @@ return {
         },
       }
 
+      if vim.g.lsp_auto_organize_imports == nil then
+        if vim.g.vtsls_auto_organize_imports ~= nil then
+          vim.g.lsp_auto_organize_imports = vim.g.vtsls_auto_organize_imports
+        else
+          vim.g.lsp_auto_organize_imports = true
+        end
+      end
+
+      if vim.g.vtsls_auto_add_missing_imports == nil then
+        vim.g.vtsls_auto_add_missing_imports = true
+      end
+
       -- ╔════════════════════════════════════════════════════════════════════╗
       -- ║                    LSP ATTACH AUTOCMD (Neovim 0.11+)               ║
       -- ╚════════════════════════════════════════════════════════════════════╝
@@ -110,7 +125,14 @@ return {
             require("tiny-code-action").code_action()
           end, "Code Action")
           -- map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code Action")
-          map("n", "<leader>cr", vim.lsp.buf.rename, "Rename")
+          map("n", "<leader>cr", function()
+            local ok = pcall(require, "inc_rename")
+            if ok then
+              vim.api.nvim_feedkeys(":IncRename " .. vim.fn.expand("<cword>"), "n", false)
+              return
+            end
+            vim.lsp.buf.rename()
+          end, "Rename")
           map("n", "<leader>cR", function()
             require("snacks").rename.rename_file()
           end, "Rename File")
@@ -154,11 +176,52 @@ return {
             })
           end
 
-          -- OmniSharp specific keymaps
-          if client and client.name == "omnisharp" then
-            vim.keymap.set("n", "gd", function()
-              require("omnisharp_extended").lsp_definition()
-            end, { buffer = bufnr, desc = "Goto Definition (OmniSharp)" })
+          -- Auto organize imports on save for vtsls and roslyn
+          if client
+            and vim.tbl_contains({ "vtsls", "roslyn" }, client.name)
+            and client.supports_method("textDocument/codeAction")
+          then
+            local organize_imports_group =
+              vim.api.nvim_create_augroup("lsp_" .. client.name .. "_organize_imports_" .. bufnr, { clear = true })
+            vim.api.nvim_create_autocmd("BufWritePre", {
+              group = organize_imports_group,
+              buffer = bufnr,
+              callback = function()
+                if vim.g.lsp_auto_organize_imports == false and vim.g.vtsls_auto_add_missing_imports == false then
+                  return
+                end
+
+                local apply_code_actions = function(action_kinds)
+                  local params = vim.lsp.util.make_range_params(0, client.offset_encoding)
+                  params.context = { only = action_kinds, diagnostics = {} }
+
+                  local result = vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, 1000)
+                  if not result then
+                    return
+                  end
+
+                  for _, res in pairs(result) do
+                    for _, action in pairs(res.result or {}) do
+                      if action.edit then
+                        vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding)
+                      end
+                      if action.command then
+                        client:exec_cmd(action.command, { bufnr = bufnr })
+                      end
+                    end
+                  end
+                end
+
+                if client.name == "vtsls" and vim.g.vtsls_auto_add_missing_imports ~= false then
+                  apply_code_actions({ "source.addMissingImports.ts", "source.addMissingImports" })
+                end
+
+                if vim.g.lsp_auto_organize_imports ~= false then
+                  apply_code_actions({ "source.organizeImports" })
+                end
+              end,
+              desc = "Auto import/organize imports (vtsls/roslyn)",
+            })
           end
         end,
       })
@@ -236,31 +299,25 @@ return {
       -- ┌────────────────────────────────────────────────────────────────────┐
       -- │                              C#                                    │
       -- └────────────────────────────────────────────────────────────────────┘
-      vim.lsp.config("omnisharp", {
+      vim.lsp.config("roslyn", {
         capabilities = capabilities,
-        cmd = { "omnisharp", "--languageserver", "--hostPID", tostring(vim.fn.getpid()) },
         settings = {
-          FormattingOptions = {
-            EnableEditorConfigSupport = true,
-            OrganizeImports = true,
+          navigation = {
+            dotnet_navigate_to_decompiled_sources = true,
           },
-          OmnisharpOptions = {
-            EnableEditorConfigSupport = true,
-            EnableMSBuildLoadProjectsOnDemand = true,
-            CodeActionsOnSave = {
-              Enable = true,
-            },
+          ["csharp|symbol_search"] = {
+            dotnet_search_reference_assemblies = true,
           },
-          RoslynExtensionsOptions = {
-            EnableAnalyzersSupport = true,
-            EnableImportCompletion = true,
-            AnalyzeOpenDocumentsOnly = true,
+          ["csharp|formatting"] = {
+            dotnet_organize_imports_on_format = true,
           },
-        },
-        handlers = {
-          ["textDocument/definition"] = function(...)
-            return require("omnisharp_extended").handler(...)
-          end,
+          ["csharp|completion"] = {
+            dotnet_show_completion_items_from_unimported_namespaces = true,
+          },
+          ["csharp|background_analysis"] = {
+            dotnet_analyzer_diagnostics_scope = "openFiles",
+            dotnet_compiler_diagnostics_scope = "openFiles",
+          },
         },
       })
 
@@ -350,7 +407,7 @@ return {
       vim.lsp.enable({
         "vtsls",
         "vue_ls",
-        "omnisharp",
+        "roslyn",
         "lua_ls",
         "jsonls",
         "yamlls",
@@ -385,13 +442,13 @@ return {
     end,
   },
 
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                         OMNISHARP EXTENDED                               │
-  -- │                   Better go-to-definition para C#                        │
-  -- └──────────────────────────────────────────────────────────────────────────┘
   {
-    "Hoffs/omnisharp-extended-lsp.nvim",
-    lazy = true,
+    "seblyng/roslyn.nvim",
+    ft = { "cs", "razor" },
+    opts = {
+      broad_search = true,
+      lock_target = true,
+    },
   },
 
   -- ┌──────────────────────────────────────────────────────────────────────────┐
