@@ -96,13 +96,8 @@ return {
         shfmt = {
           prepend_args = { "-i", "2", "-ci", "-bn" },
         },
-        csharpier = {
-          -- Installed as dotnet global tool: dotnet tool install -g csharpier
-          command = vim.fn.expand("$HOME") .. "/.dotnet/tools/csharpier",
-          env = {
-            DOTNET_ROOT = "/usr/lib64/dotnet",
-          },
-        },
+        -- csharpier: uses conform's builtin definition (auto-detects dotnet local vs global)
+        -- Installed as dotnet global tool: dotnet tool install -g csharpier
       },
     },
     init = function()
