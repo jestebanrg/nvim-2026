@@ -97,7 +97,8 @@ return {
           prepend_args = { "-i", "2", "-ci", "-bn" },
         },
         csharpier = {
-          command = vim.fn.stdpath("data") .. "/mason/bin/csharpier",
+          -- Installed as dotnet global tool: dotnet tool install -g csharpier
+          command = vim.fn.expand("$HOME") .. "/.dotnet/tools/csharpier",
           env = {
             DOTNET_ROOT = "/usr/lib64/dotnet",
           },
@@ -107,9 +108,9 @@ return {
     init = function()
       vim.api.nvim_create_user_command("FormatDisable", function(args)
         if args.bang then
-          vim.b.disable_autoformat = false
+          vim.b.disable_autoformat = true
         else
-          vim.g.disable_autoformat = false
+          vim.g.disable_autoformat = true
         end
         vim.notify("Autoformat disabled", vim.log.levels.INFO)
       end, {
@@ -147,6 +148,11 @@ return {
       "williamboman/mason.nvim",
       "stevearc/conform.nvim",
     },
-    opts = {},
+    opts = {
+      ensure_installed = {
+        -- csharpier: installed as dotnet global tool, not via Mason
+        -- run: dotnet tool install -g csharpier
+      },
+    },
   },
 }

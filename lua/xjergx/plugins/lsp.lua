@@ -126,10 +126,7 @@ return {
           map("i", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
 
           -- Actions
-          map({ "n", "v" }, "<leader>ca", function()
-            require("tiny-code-action").code_action()
-          end, "Code Action")
-          -- map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code Action")
+          map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code Action")
           map("n", "<leader>cr", function()
             local ok = pcall(require, "inc_rename")
             if ok then
@@ -300,28 +297,10 @@ return {
 
       -- ┌────────────────────────────────────────────────────────────────────┐
       -- │                              C#                                    │
+      -- │  roslyn.nvim maneja su propia config — NO usar vim.lsp.config ni  │
+      -- │  vim.lsp.enable para roslyn. El plugin lo registra por su cuenta.  │
       -- └────────────────────────────────────────────────────────────────────┘
-      vim.lsp.config("roslyn", {
-        capabilities = capabilities,
-        settings = {
-          navigation = {
-            dotnet_navigate_to_decompiled_sources = true,
-          },
-          ["csharp|symbol_search"] = {
-            dotnet_search_reference_assemblies = true,
-          },
-          ["csharp|formatting"] = {
-            dotnet_organize_imports_on_format = true,
-          },
-          ["csharp|completion"] = {
-            dotnet_show_completion_items_from_unimported_namespaces = true,
-          },
-          ["csharp|background_analysis"] = {
-            dotnet_analyzer_diagnostics_scope = "openFiles",
-            dotnet_compiler_diagnostics_scope = "openFiles",
-          },
-        },
-      })
+      -- (roslyn config is in roslyn.nvim opts below)
 
       -- ┌────────────────────────────────────────────────────────────────────┐
       -- │                              LUA                                   │
@@ -409,7 +388,7 @@ return {
       vim.lsp.enable({
         "vtsls",
         "vue_ls",
-        "roslyn",
+        -- roslyn: managed by roslyn.nvim plugin, NOT vim.lsp.enable
         "lua_ls",
         "jsonls",
         "yamlls",
@@ -447,10 +426,43 @@ return {
   {
     "seblyng/roslyn.nvim",
     event = { "BufReadPost", "BufNewFile" },
-    opts = {
-      broad_search = true,
-      lock_target = true,
-    },
+    opts = function()
+      local capabilities = vim.tbl_deep_extend(
+        "force",
+        {},
+        vim.lsp.protocol.make_client_capabilities(),
+        require("blink.cmp").get_lsp_capabilities()
+      )
+      capabilities.workspace = {
+        didChangeWatchedFiles = { dynamicRegistration = true },
+      }
+
+      return {
+        broad_search = true,
+        lock_target = true,
+        config = {
+          capabilities = capabilities,
+          settings = {
+            navigation = {
+              dotnet_navigate_to_decompiled_sources = true,
+            },
+            ["csharp|symbol_search"] = {
+              dotnet_search_reference_assemblies = true,
+            },
+            ["csharp|formatting"] = {
+              dotnet_organize_imports_on_format = true,
+            },
+            ["csharp|completion"] = {
+              dotnet_show_completion_items_from_unimported_namespaces = true,
+            },
+            ["csharp|background_analysis"] = {
+              dotnet_analyzer_diagnostics_scope = "openFiles",
+              dotnet_compiler_diagnostics_scope = "openFiles",
+            },
+          },
+        },
+      }
+    end,
   },
 
   -- ┌──────────────────────────────────────────────────────────────────────────┐
