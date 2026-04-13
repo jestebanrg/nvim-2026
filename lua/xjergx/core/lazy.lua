@@ -30,7 +30,7 @@ require("lazy").setup({
     version = false, -- Siempre usar latest commit
   },
   install = {
-    colorscheme = { "kanagawa", "habamax" },
+    colorscheme = { "kanagawa" },
   },
   checker = {
     enabled = true, -- Check for updates automáticamente

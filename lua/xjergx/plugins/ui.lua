@@ -2,7 +2,7 @@ return {
   {
     "rebelot/kanagawa.nvim",
     lazy = false,
-    priority = 1000,
+    -- priority = 1000,
     opts = {
       compile = true,
       undercurl = true,
@@ -46,10 +46,32 @@ return {
     },
     config = function(_, opts)
       require("kanagawa").setup(opts)
-      vim.cmd.colorscheme("kanagawa")
+      -- vim.cmd.colorscheme("kanagawa")
     end,
   },
 
+  {
+    "folke/tokyonight.nvim",
+    lazy = false,
+    priority = 1000,
+    opts = {},
+    config = function(_, opts)
+      require("tokyonight").setup(opts)
+      -- vim.cmd.colorscheme("tokyonight")
+    end,
+  },
+  {
+    "vague-theme/vague.nvim",
+    lazy = false, -- make sure we load this during startup if it is your main colorscheme
+    priority = 1000, -- make sure to load this before all the other plugins
+    config = function()
+      -- NOTE: you do not need to call setup if you don't want to.
+      require("vague").setup({
+        -- optional configuration here
+      })
+      vim.cmd("colorscheme vague")
+    end,
+  },
   -- ┌──────────────────────────────────────────────────────────────────────────┐
   -- │                              LUALINE                                     │
   -- │                     Statusline bonita y funcional                        │
@@ -61,6 +83,7 @@ return {
       "christopher-francisco/tmux-status.nvim",
     },
     event = "VeryLazy",
+    lazy = true,
     config = function()
       local has_tmux_status, tmux_status = pcall(require, "tmux-status")
 
@@ -216,7 +239,7 @@ return {
       "MunifTanjim/nui.nvim",
     },
     opts = {
-      transparent = true,
+      transparent = false,
       lsp = {
         override = {
           ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
@@ -347,7 +370,14 @@ return {
       exclude_groups = {},
     },
     keys = {
-      { "<leader>uT", "<Cmd>TransparentToggle<CR>", desc = "Toggle Transparency" },
+      { "<leader>uv", "<Cmd>TransparentToggle<CR>", desc = "Toggle Transparency" },
     },
+  },
+  {
+    "brenoprata10/nvim-highlight-colors",
+    lazy = false,
+    config = function()
+      require("nvim-highlight-colors").setup({})
+    end,
   },
 }

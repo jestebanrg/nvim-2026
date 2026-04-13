@@ -99,12 +99,11 @@ return {
       },
     },
     init = function()
-      -- Comandos para toggle format on save
       vim.api.nvim_create_user_command("FormatDisable", function(args)
         if args.bang then
-          vim.b.disable_autoformat = true
+          vim.b.disable_autoformat = false
         else
-          vim.g.disable_autoformat = true
+          vim.g.disable_autoformat = false
         end
         vim.notify("Autoformat disabled", vim.log.levels.INFO)
       end, {

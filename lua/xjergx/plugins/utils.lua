@@ -1,4 +1,18 @@
 return {
+  -- ┌──────────────────────────────────────────────────────────────────────────┐
+  -- │                           LAZYDEV.NVIM                                   │
+  -- │     Tipos de la API de Neovim en el LSP al editar config Lua             │
+  -- │            https://github.com/folke/lazydev.nvim                         │
+  -- └──────────────────────────────────────────────────────────────────────────┘
+  {
+    "folke/lazydev.nvim",
+    ft = "lua",
+    opts = {
+      library = {
+        { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+      },
+    },
+  },
   {
     "folke/which-key.nvim",
     event = "VeryLazy",

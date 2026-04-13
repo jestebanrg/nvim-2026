@@ -38,6 +38,7 @@ return {
   {
     "neovim/nvim-lspconfig",
     event = { "BufReadPost", "BufNewFile", "BufWritePre" },
+    cmd = { "LspInfo", "LspStart", "LspStop", "LspRestart" },
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
@@ -145,24 +146,20 @@ return {
           end, "List Workspace Folders")
 
           -- Inlay Hints (Neovim 0.10+)
-          if client and client.supports_method("textDocument/inlayHint") then
+          if client and client:supports_method("textDocument/inlayHint") then
             map("n", "<leader>uh", function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), { bufnr = bufnr })
             end, "Toggle Inlay Hints")
           end
 
           -- Code Lens
-          if client and client.supports_method("textDocument/codeLens") then
-            vim.lsp.codelens.refresh()
-            vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "InsertLeave" }, {
-              buffer = bufnr,
-              callback = vim.lsp.codelens.refresh,
-            })
+          if client and client:supports_method("textDocument/codeLens") then
+            vim.lsp.codelens.enable(true, { bufnr = bufnr })
             map("n", "<leader>cl", vim.lsp.codelens.run, "Run Code Lens")
           end
 
           -- Document Highlight
-          if client and client.supports_method("textDocument/documentHighlight") then
+          if client and client:supports_method("textDocument/documentHighlight") then
             local highlight_augroup = vim.api.nvim_create_augroup("lsp_highlight_" .. bufnr, { clear = true })
             vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
               group = highlight_augroup,
@@ -179,7 +176,7 @@ return {
           -- Auto organize imports on save for vtsls and roslyn
           if client
             and vim.tbl_contains({ "vtsls", "roslyn" }, client.name)
-            and client.supports_method("textDocument/codeAction")
+            and client:supports_method("textDocument/codeAction")
           then
             local organize_imports_group =
               vim.api.nvim_create_augroup("lsp_" .. client.name .. "_organize_imports_" .. bufnr, { clear = true })

@@ -272,7 +272,7 @@ return {
         zen = {
           width = 120,
           height = 0,
-          backdrop = { transparent = true, blend = 40 },
+          backdrop = { transparent = false, blend = 40 },
         },
       },
 
@@ -380,7 +380,7 @@ return {
         desc = "Git Status",
       },
       {
-        "<leader>gB",
+        "<leader>gE",
         function()
           Snacks.picker.git_branches()
         end,
@@ -849,6 +849,13 @@ return {
           Snacks.toggle.dim():toggle()
         end,
         desc = "Toggle Dim",
+      },
+      {
+        "<leader>uC",
+        function()
+          Snacks.picker.colorschemes()
+        end,
+        desc = "Colorschemes",
       },
       {
         "<leader>ua",

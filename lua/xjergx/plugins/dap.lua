@@ -48,7 +48,7 @@ return {
         desc = "Continue / Start",
       },
       {
-        "<leader>dp",
+        "<leader>dP",
         function()
           require("dap").pause()
         end,

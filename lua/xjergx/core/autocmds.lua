@@ -179,6 +179,17 @@ vim.api.nvim_create_autocmd("TermOpen", {
 })
 
 -- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │                         VUE COMMENTSTRING                                │
+-- └──────────────────────────────────────────────────────────────────────────┘
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup("vue_commentstring"),
+  pattern = "vue",
+  callback = function()
+    vim.bo.commentstring = "<!-- %s -->"
+  end,
+})
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
 -- │                         FILETYPE DETECTION FIX                           │
 -- └──────────────────────────────────────────────────────────────────────────┘
 -- Fix para oil/snacks que no disparan filetype detect al abrir archivos

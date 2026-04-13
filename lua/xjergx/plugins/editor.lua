@@ -1,10 +1,10 @@
 local parsers = {
   -- Tu stack
+  "c_sharp",
   "typescript",
   "javascript",
   "tsx",
   "vue",
-  "c_sharp",
   "lua",
   -- Web
   "html",
@@ -234,12 +234,13 @@ return {
       },
     },
   },
-
-  -- ┌──────────────────────────────────────────────────────────────────────────┐
-  -- │                              MINI.NVIM                                   │
-  -- │                       Colección de utilidades                            │
-  -- └──────────────────────────────────────────────────────────────────────────┘
-  -- Mini.pairs - Auto close brackets
+  {
+    "JoosepAlviste/nvim-ts-context-commentstring",
+    lazy = true,
+    opts = {
+      enable_autocmd = false,
+    },
+  },
   {
     "echasnovski/mini.pairs",
     event = "VeryLazy",
@@ -251,7 +252,6 @@ return {
       markdown = true,
     },
   },
-
   -- Mini.surround - Surround text objects
   {
     "echasnovski/mini.surround",
@@ -260,7 +260,7 @@ return {
       mappings = {
         add = "gsa", -- Add surrounding in Normal and Visual modes
         delete = "gsd", -- Delete surrounding
-        find = "gsf", -- Find surrounding (to the right)
+        find = "gsf",
         find_left = "gsF", -- Find surrounding (to the left)
         highlight = "gsh", -- Highlight surrounding
         replace = "gsr", -- Replace surrounding
@@ -276,19 +276,29 @@ return {
     opts = {
       options = {
         custom_commentstring = function()
-          return require("ts_context_commentstring.internal").calculate_commentstring() or vim.bo.commentstring
+          -- Para Vue: escanear hacia atrás para detectar sección actual
+          if vim.bo.filetype == "vue" then
+            local row = vim.api.nvim_win_get_cursor(0)[1]
+            local lines = vim.api.nvim_buf_get_lines(0, 0, row, false)
+            for i = #lines, 1, -1 do
+              local line = lines[i]
+              if line:match("<script") then
+                return "// %s"
+              elseif line:match("<style") then
+                return line:match("lang=[\"']scss[\"']") and "// %s" or "/* %s */"
+              elseif line:match("<template") then
+                return "<!-- %s -->"
+              end
+            end
+            return "<!-- %s -->"
+          end
+
+          return vim.bo.commentstring
         end,
       },
     },
     dependencies = {
       "JoosepAlviste/nvim-ts-context-commentstring",
-    },
-  },
-  {
-    "JoosepAlviste/nvim-ts-context-commentstring",
-    lazy = true,
-    opts = {
-      enable_autocmd = false,
     },
   },
   {

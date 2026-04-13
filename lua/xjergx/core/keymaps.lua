@@ -8,7 +8,6 @@ local map = vim.keymap.set
 -- ┌──────────────────────────────────────────────────────────────────────────┐
 -- │                              GENERAL                                     │
 -- └──────────────────────────────────────────────────────────────────────────────────┘
-
 -- Mejor escape
 map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 map("i", "kj", "<Esc>", { desc = "Exit insert mode" })
@@ -76,12 +75,12 @@ map("n", "]b", "<Cmd>bnext<CR>", { desc = "Next buffer" })
 -- └──────────────────────────────────────────────────────────────────────────┘
 
 -- Mover líneas
-map("n", "<A-j>", "<Cmd>m .+2<CR>==", { desc = "Move line down", silent = true, noremap = true })
-map("i", "<A-j>", "<Esc><Cmd>m .+2<CR>==gi", { desc = "Move line down", silent = true, noremap = true })
-map("n", "<A-k>", "<Cmd>m .-1<CR>==", { desc = "Move line up", silent = true, noremap = true })
-map("v", "<A-j>", ":m '>+2<CR>gv=gv", { desc = "Move selection down", silent = true, noremap = true })
-map("v", "<A-k>", ":m '<-1<CR>gv=gv", { desc = "Move selection up", silent = true, noremap = true })
-map("i", "<A-k>", "<Esc><Cmd>m .-1<CR>==gi", { desc = "Move line up", silent = true, noremap = true })
+map("n", "<A-j>", "<Cmd>m .+1<CR>==", { desc = "Move line down", silent = true, noremap = true })
+map("i", "<A-j>", "<Esc><Cmd>m .+1<CR>==gi", { desc = "Move line down", silent = true, noremap = true })
+map("n", "<A-k>", "<Cmd>m .-2<CR>==", { desc = "Move line up", silent = true, noremap = true })
+map("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move selection down", silent = true, noremap = true })
+map("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move selection up", silent = true, noremap = true })
+map("i", "<A-k>", "<Esc><Cmd>m .-2<CR>==gi", { desc = "Move line up", silent = true, noremap = true })
 
 -- Mejor indentación en visual mode
 map("v", "<", "<gv", { desc = "Indent left and reselect" })
