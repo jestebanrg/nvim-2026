@@ -81,7 +81,7 @@ return {
         end
         return {
           timeout_ms = 3000,
-          lsp_fallback = true,
+          lsp_fallback = vim.bo[bufnr].filetype ~= "cs",
         }
       end,
 
@@ -95,6 +95,12 @@ return {
         },
         shfmt = {
           prepend_args = { "-i", "2", "-ci", "-bn" },
+        },
+        csharpier = {
+          command = vim.fn.stdpath("data") .. "/mason/bin/csharpier",
+          env = {
+            DOTNET_ROOT = "/usr/lib64/dotnet",
+          },
         },
       },
     },

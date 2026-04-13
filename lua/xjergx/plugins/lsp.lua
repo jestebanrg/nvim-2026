@@ -113,7 +113,11 @@ return {
             vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
           end
 
-          -- NOTE: gd, gr, gI, gy are mapped in snacks.lua to snacks.picker
+          -- Prefer native LSP jumps for reliability (Snacks picker can show empty results on some servers)
+          map("n", "gd", vim.lsp.buf.definition, "Goto Definition")
+          map("n", "gr", vim.lsp.buf.references, "References")
+          map("n", "gI", vim.lsp.buf.implementation, "Goto Implementation")
+          map("n", "gy", vim.lsp.buf.type_definition, "Goto Type Definition")
           map("n", "gD", vim.lsp.buf.declaration, "Goto Declaration")
 
           -- Hover & Signature
@@ -173,9 +177,10 @@ return {
             })
           end
 
-          -- Auto organize imports on save for vtsls and roslyn
-          if client
-            and vim.tbl_contains({ "vtsls", "roslyn" }, client.name)
+          -- Auto organize imports on save (vtsls only)
+          if
+            client
+            and vim.tbl_contains({ "vtsls" }, client.name)
             and client:supports_method("textDocument/codeAction")
           then
             local organize_imports_group =
@@ -217,7 +222,7 @@ return {
                   apply_code_actions({ "source.organizeImports" })
                 end
               end,
-              desc = "Auto import/organize imports (vtsls/roslyn)",
+              desc = "Auto import/organize imports (vtsls)",
             })
           end
         end,
@@ -441,7 +446,7 @@ return {
 
   {
     "seblyng/roslyn.nvim",
-    ft = { "cs", "razor" },
+    event = { "BufReadPost", "BufNewFile" },
     opts = {
       broad_search = true,
       lock_target = true,

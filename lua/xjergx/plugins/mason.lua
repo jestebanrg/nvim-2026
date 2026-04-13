@@ -19,14 +19,13 @@ return {
 		lazy = false,
 		dependencies = { "mason.nvim" },
 		config = function()
-			require("mason-lspconfig").setup({
-				-- List of servers to auto-install
-				ensure_installed = {
-					"lua_ls",
-					"ts_ls",
-					"jsonls",
-					"omnisharp",
-				},
+				require("mason-lspconfig").setup({
+					-- List of servers to auto-install
+					ensure_installed = {
+						"lua_ls",
+						"ts_ls",
+						"jsonls",
+					},
 				-- Auto-launch servers after installation
 				automatic_installation = true,
 			})
